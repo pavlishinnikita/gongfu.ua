@@ -21,3 +21,106 @@ Underscores is distributed under the terms of the GNU GPL v2 or later.
 Normalizing styles have been helped along thanks to the fine work of
 Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
 */
+
+body {
+    cursor: url(assets/dist/images/tea-cursor.png), auto !important;
+}
+
+/** Header **/
+.os-col.header-shop-info h1 {
+    margin-bottom: 0;
+}
+
+/** Main **/
+
+.site-content .wc-block-grid__product .wc-block-grid__product-image {
+    border: none;
+}
+
+.wc-block-grid__products .wc-block-grid__product-image img, .product-main-wrap {
+    border-radius: 50px;
+}
+
+.wc-block-grid.has-5-columns .wc-block-grid__products .wc-block-grid__product, .wc-block-grid__products .wc-block-grid__product {
+    transition: all .5s ease-in-out;
+}
+
+.wc-block-grid.has-5-columns .wc-block-grid__products .wc-block-grid__product:hover, .wc-block-grid__products .wc-block-grid__product:hover {
+    scale: 1.1;
+}
+
+.wc-block-grid .wc-block-grid__products .wc-block-grid__product .wc-block-grid__product-add-to-cart > a, .woocommerce .products .product .custom-cart-btn .button {
+    border-radius: 20px;
+}
+
+.site-content .wc-block-grid__product .wc-block-grid__product-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.site-content .inner-page-wrap .editor-entry {
+    background: transparent;
+    border: none;
+    box-shadow: unset;
+}
+
+.banner {
+    position: relative;
+    margin: 0 0 70px 0;
+    height: 390px;
+    background-size: cover;
+    color: wheat;
+    text-shadow: #000 1px 0 5px;
+}
+.wp-block-heading {
+    /*text-shadow: #e26143 1px 0 5px;*/
+}
+
+.banner h1, .banner p:not(.blur) {
+    z-index: 1;
+}
+
+.banner .blur {
+    background: url(assets/dist/images/banner.jpg) no-repeat;
+    background-size: cover;
+    overflow: hidden;
+    filter: blur(5px);
+    top: -50px;
+    left: -50px;
+    right: -50px;
+    bottom: -50px;
+    position: absolute;
+    border-radius: 250px;
+}
+
+.os-result-count-and-catalog-ordering {
+    /*display: none;*/
+}
+
+.site.__os-page-wrap__ {
+    background-image: url(assets/dist/images/background.jpg);
+    background-position: left top;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+.background-clear .site.__os-page-wrap__ {
+    background-image: none;
+}
+.single-product .woocommerce-tabs.wc-tabs-wrapper {
+    display: none;
+}
+
+.tax-product_cat .os-breadcrumb-wrap {
+    display: none;
+}
+
+.title-block {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.title-block a {
+    text-decoration: none;
+}

@@ -96,7 +96,10 @@
 						$orchid_store_display_wishlist_icon
 					) {
 						?>
-						<div class="os-col extra-col">
+                        <div class="os-col header-shop-info">
+                            <h1>Гунфу Ча 功夫茶</h1>
+                        </div>
+						<div class="os-col _extra-col">
 							<div class="aside-right">
 								<?php
 								if ( $orchid_store_display_product_search ) {

@@ -7,9 +7,10 @@
  * @package Orchid_Store
  */
 
-$current_theme = wp_get_theme( 'orchid-store' );
+$current_theme = wp_get_theme( 'orchid-store-custom' );
 
 define( 'ORCHID_STORE_VERSION', $current_theme->get( 'Version' ) );
+define( 'ORCHID_STORE_CUSTOM_ROOT', $current_theme->get_theme_root() . DIRECTORY_SEPARATOR . $current_theme->get_template());
 
 if ( ! function_exists( 'orchid_store_setup' ) ) :
 	/**
@@ -287,9 +288,43 @@ function orchid_store_admin_enqueue() {
 add_action( 'admin_enqueue_scripts', 'orchid_store_admin_enqueue' );
 add_action( 'wp_ajax_wp_ajax_install_plugin', 'wp_ajax_install_plugin' );
 
+/**
+ * @param $template
+ * @return string
+ */
+function wc_get_template_filter($template) : string
+{
+    if (!defined("ABSPATH")) {
+        return $template;
+    }
 
+    $partForOverriding = substr($template, strpos($template, 'woocommerce/') + strlen('woocommerce/'));
+    $customTemplatePath = ORCHID_STORE_CUSTOM_ROOT . '/woocommerce/' . $partForOverriding;
+    if (!empty($partForOverriding) && file_exists($customTemplatePath)) {
+        return $customTemplatePath;
+    }
+    return $template;
+}
 
+/**
+ * @param $atts
+ * @return string
+ */
+function get_counter_handler($atts) {
+    $attributes = shortcode_atts(
+        array(
+            'entity' => '',
+        ),
+        $atts);
 
+    return match ($attributes['entity']) {
+        'good' => wp_count_posts( 'product' )->publish,
+        'category' => count(get_terms( 'product_cat', ['hide_empty' => 0])),
+        default => 0
+    };
+}
+
+add_shortcode( 'counter', 'get_counter_handler' );
 
 /**
  * Activates plugin AFC plugin.
@@ -421,3 +456,125 @@ require get_template_directory() . '/inc/custom-fields.php';
  * Load theme dependecies
  */
 require get_template_directory() . '/vendor/autoload.php';
+
+// Add a custom field to the WooCommerce checkout page
+add_action('woocommerce_after_order_notes', 'newPostAddress_checkout_field');
+
+function newPostAddress_checkout_field($checkout)
+{
+    echo '<div id="newPostAddress_checkout_field"><h2>' . __('Адреса нової пошти') . '</h2>';
+
+    woocommerce_form_field('newPostAddress_field', array(
+        'type' => 'text',
+        'required' => true,
+        'class' => array('new-post-address form-row-wide'),
+        'label' => __('Адреса нової пошти'),
+        'placeholder' => __('Введіть адресу та відділення нової пошти'),
+    ), $checkout->get_value('newPostAddress_field'));
+
+    echo '</div>';
+}
+
+// Validate the custom field during the checkout process
+add_action('woocommerce_checkout_process', 'validate_newPostAddress_field_field');
+
+function validate_newPostAddress_field_field()
+{
+    if (empty($_POST['newPostAddress_field']) && $_POST['shipping_method'][0] == 'flat_rate:2') {
+        wc_add_notice(__("Адреса нової пошти обов'язкова"), 'error');
+        add_filter('woocommerce_checkout_fields', '__return_false');
+    }
+}
+
+add_action('wp_enqueue_scripts', 'enqueue_custom_script');
+
+function enqueue_custom_script()
+{
+    wp_enqueue_script('custom-checkout-script', get_template_directory_uri() . '/assets/dist/js/custom-checkout-script.js', array('jquery'), '', true);
+
+    // Pass variables to JavaScript
+    wp_localize_script('custom-checkout-script', 'checkout_params', array(
+        'custom_field_selector' => '#newPostAddress_checkout_field',
+        'delivery_method_selector' => 'input.shipping_method',
+        'trigger_value' => 'flat_rate:2',
+    ));
+}
+
+// Save custom field value to order meta
+add_action('woocommerce_checkout_create_order', 'save_newPostAddress_checkout_field');
+
+function save_newPostAddress_checkout_field($order)
+{
+    if (!empty($_POST['newPostAddress_field'])) {
+        $order->update_meta_data('_newPostAddress_field', sanitize_text_field($_POST['newPostAddress_field']));
+    }
+}
+
+
+function update_custom_field_in_admin($order_id, $post)
+{
+    if (!empty($_POST['newPostAddress_field'])) {
+        update_post_meta($order_id, '_newPostAddress_field', sanitize_text_field($_POST['newPostAddress_field']));
+    }
+}
+
+/**
+ * Display field value on the order edit page
+ */
+
+add_action( 'woocommerce_admin_order_data_after_shipping_address', 'newPostAddress_checkout_field_display_admin_order_meta', 10, 1 );
+
+function newPostAddress_checkout_field_display_admin_order_meta($order) {
+    $custom_field = $order->get_meta('_newPostAddress_field');
+    if ($custom_field) {
+        echo '<p><strong>' . __('Адреса нової пошти') . ':</strong> ' . esc_html($custom_field) . '</p>';
+    }
+}
+
+// Hook in
+add_filter( 'woocommerce_checkout_fields' , 'custom_override_checkout_fields' );
+
+// Our hooked in function - $fields is passed via the filter!
+function custom_override_checkout_fields( $fields ) {
+    return $fields;
+}
+
+// add class for body
+add_filter( 'body_class','bodyClassBasedOnUrl' );
+function bodyClassBasedOnUrl( $classes ) {
+    global $wp;
+    if (
+        str_contains(home_url( $wp->request ), 'privacy-policy')
+        ||
+        str_contains(home_url( $wp->request ), 'refund_returns')
+    ) {
+        $classes[] = 'background-clear';
+    }
+    return $classes;
+}
+
+// Add custom field to the delivery cell in WooCommerce order confirmation email
+add_filter('woocommerce_get_order_item_totals', 'add_custom_field_to_delivery_cell', 10, 3);
+
+function add_custom_field_to_delivery_cell($total_rows, $order, $tax_display)
+{
+    $newPostInfo = $order->get_meta('_newPostAddress_field');
+    if ($newPostInfo) {
+        $total_rows['shipping']['value'] .= '<br><small>' . __('Адреса') . ': ' . esc_html($newPostInfo) . "</small>";
+    }
+
+    return $total_rows;
+}
+
+function customize_admin_menu() {
+    global $menu;
+    if (current_user_can('shop_manager')) {
+        foreach ($menu as $index => $menu_item) {
+            if (!in_array($menu_item[1], ['edit_products', 'upload_files', 'edit_others_shop_orders'])) {
+                remove_menu_page($menu_item[2]);
+            }
+        }
+    }
+}
+
+add_action('admin_menu', 'customize_admin_menu');

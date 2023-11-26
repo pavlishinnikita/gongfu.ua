@@ -1012,3 +1012,4 @@ function orchid_store_woocommerce_sale_flash( $sale_tag, $post, $product ) {
 	return '<span class="onsale">' . esc_html( get_theme_mod( 'orchid_store_field_sale_tag_text', esc_html__( 'Sale!', 'orchid-store' ) ) ) . '</span>';
 }
 add_filter( 'woocommerce_sale_flash', 'orchid_store_woocommerce_sale_flash', 10, 3 );
+add_filter('wc_get_template', 'wc_get_template_filter');
