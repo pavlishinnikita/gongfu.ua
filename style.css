@@ -98,12 +98,21 @@ body {
 }
 
 .site.__os-page-wrap__ {
-    background-image: url(assets/dist/images/background.jpg);
-    background-position: left top;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    position: relative;
 }
+.site.__os-page-wrap__::before {
+    background: url(assets/dist/images/background.jpg) no-repeat center center;
+    background-size: cover;
+    content: ' ';
+    height: 100%;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    will-change: transform;
+    z-index: -1;
+}
+
 .background-clear .site.__os-page-wrap__ {
     background-image: none;
 }
@@ -123,4 +132,24 @@ body {
 
 .title-block a {
     text-decoration: none;
+}
+
+@media screen and (max-width: 1024px){
+    .site-content .__os-container__ > div.row {
+        display: flex;
+        flex-direction: column-reverse;
+    }
+
+    .site-content .__os-container__ .woocommerce-ordering {
+        width: 100%;
+    }
+
+    .site-content .__os-container__ .sidebar-col.hide-in-small {
+        display: block;
+    }
+}
+
+.__os-container__ .product-categories {
+    max-height: 150px;
+    overflow-y: scroll;
 }
