@@ -319,12 +319,51 @@ function get_counter_handler($atts) {
 
     return match ($attributes['entity']) {
         'good' => wp_count_posts( 'product' )->publish,
-        'category' => count(get_terms( 'product_cat', ['hide_empty' => 0])),
+        'category' => count(get_terms( 'product_cat', ['hide_empty' => 1])),
         default => 0
     };
 }
 
 add_shortcode( 'counter', 'get_counter_handler' );
+
+// customize shop filter
+
+function custom_filter_dropdown() {
+    $categories = get_terms('product_cat');
+
+	echo '<div class="filter-block">';
+	
+    if ($categories) {
+        echo '<select name="category_filter" id="category_filter" class="select-filter">';
+        echo '<option value=""></option>';
+
+        foreach ($categories as $category) {
+            echo '<option value="' . esc_attr($category->slug) . '">' . esc_html($category->name) . '</option>';
+        }
+
+        echo '</select>';
+    }
+	
+	echo '</div>';
+}
+
+//add_action('woocommerce_before_shop_loop', 'custom_filter_dropdown');
+
+function custom_filter_products() {
+    if (isset($_GET['category_filter']) && !empty($_GET['category_filter'])) {
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' => 'product_cat',
+                'field'    => 'slug',
+                'terms'    => $_GET['category_filter'],
+            ),
+        );
+    }
+
+    return $args;
+}
+
+// customize shop filter
 
 /**
  * Activates plugin AFC plugin.
@@ -358,9 +397,170 @@ function orchid_store_activate_plugin() {
 }
 add_action( 'wp_ajax_orchid_store_activate_plugin', 'orchid_store_activate_plugin' );
 
+//region FIELDS FOR CHECKOUT
+function checkout_fields($fields) {
+    unset($fields['billing']['billing_company']);
+    unset($fields['billing']['billing_country']);
+    unset($fields['billing']['billing_state']);
+    unset($fields['billing']['billing_city']);
+    unset($fields['billing']['billing_address_2']);
+
+    $fields['billing']['billing_postcode']['placeholder'] = "XXXXX";
+    $fields['billing']['billing_postcode']['required'] = false;
+    $fields['billing']['billing_postcode']['label'] = __("Поштовий індекс") . ' <abbr class="required" title="">*</abbr>';
+
+    $fields['billing']['billing_phone']['placeholder'] = "+380YYXXXXXX";
+    $fields['billing']['billing_email']['placeholder'] = "username@domain.com";
+    $fields['billing']['newPostAddress_field'] = [
+        'type' => 'text',
+        'required' => false,
+        'class' => array('new-post-address form-row-wide'),
+        'label' => __('Відділення нової пошти') . ' <abbr class="required" title="">*</abbr>',
+        'placeholder' => __('Відділення'),
+    ];
+    $fields['billing']['billing_address_1']['placeholder'] = __("Місто, вулиця, будинок");
+    $fields['billing']['billing_address_1']['label'] = __("Адреса");
+
+    $fields['shipping'] = [];
+    return $fields;
+}
+add_filter('woocommerce_checkout_fields', "checkout_fields");
+//endregion
+
+// Validate the custom field during the checkout process
+add_action('woocommerce_checkout_process', 'validate_delivery_fields');
+
+function validate_delivery_fields()
+{
+    $shipping_method = $_POST['shipping_method'][0] ?? null;
+
+    if ($shipping_method === "flat_rate:2") {
+        if (empty($_POST['newPostAddress_field'])) {
+            wc_add_notice(__("Відділення нової пошти обов'язкове поле"), 'error');
+        }
+    } elseif ($shipping_method === "flat_rate:3") {
+        if (empty($_POST['billing_postcode'])) {
+            wc_add_notice(__("Поштовий індекс обов'язкове поле"), 'error');
+        }
+    }
+}
+
+add_action('wp_enqueue_scripts', 'enqueue_custom_script');
+
+function enqueue_custom_script()
+{
+    wp_enqueue_script('custom-checkout-script', get_template_directory_uri() . '/assets/dist/js/custom-checkout-script.js', array('jquery'), '', true);
+
+    // Pass variables to JavaScript
+    wp_localize_script('custom-checkout-script', 'checkout_params', array(
+        'delivery_method_selector' => 'input.shipping_method',
+    ));
+}
+
+//region custom order of checkout fields
+function custom_checkout_field_priority($fields) {
+    $fields['billing']['billing_first_name']['priority'] = 10;
+    $fields['billing']['billing_last_name']['priority'] = 20;
+    $fields['billing']['billing_phone']['priority'] = 30;
+    $fields['billing']['billing_email']['priority'] = 40;
+    $fields['billing']['billing_address_1']['priority'] = 50;
+    $fields['billing']['billing_postcode']['priority'] = 60;
+    $fields['billing']['newPostAddress_field']['priority'] = 70;
+    $fields['order']['order_comments']['priority'] = 900;
+    return $fields;
+}
+add_filter('woocommerce_checkout_fields', 'custom_checkout_field_priority');
+//endregion
+
+// Save custom field value to order meta
+add_action('woocommerce_checkout_create_order', 'save_custom_checkout_fields');
+
+function save_custom_checkout_fields($order)
+{
+    if (!empty($_POST['newPostAddress_field'])) {
+        $order->update_meta_data('_newPostAddress_field', sanitize_text_field($_POST['newPostAddress_field']));
+    }
+}
+
+// Display custom field in admin order edit screen
+//add_action('woocommerce_admin_order_data_after_billing_address', 'display_custom_field_in_admin');
+
+/**
+ * Display field value on the order edit page
+ */
+
+add_action( 'woocommerce_admin_order_data_after_shipping_address', 'newPostAddress_checkout_field_display_admin_order_meta', 10, 1 );
+
+function newPostAddress_checkout_field_display_admin_order_meta($order) {
+
+    $newPostInfo = $order->get_meta('_newPostAddress_field');
+    $billingPostCode = $order->get_billing_postcode();
+    $billingAddress = $order->get_billing_address_1();
+    if ($newPostInfo) {
+        echo '<p><strong>' . __("Адреса") . ': ' . $billingAddress . ' (' .  __('відділення') . ': ' . esc_html($newPostInfo) . " " . ")" . '</p>';
+    } else if($billingPostCode) {
+        echo '<p><strong>' .__("Адреса") . ': ' . $billingAddress . ' (' . __('Поштовий індекс') . ': ' . esc_html($billingPostCode) . ")" . '</p>';
+    }
+}
+
+// Add custom field to the delivery cell in WooCommerce order confirmation email
+add_filter('woocommerce_get_order_item_totals', 'add_custom_field_to_delivery_cell', 10, 3);
+
+function add_custom_field_to_delivery_cell($total_rows, $order, $tax_display)
+{
+    $newPostInfo = $order->get_meta('_newPostAddress_field');
+    $billingPostCode = $order->get_billing_postcode();
+    $billingAddress = $order->get_billing_address_1();
+    if ($newPostInfo) {
+        $total_rows['shipping']['value'] .= '<br><small>' . __("Адреса") . ': ' . $billingAddress . ' (' .  __('відділення') . ': ' . esc_html($newPostInfo) . " " . ")</small>";
+    } else if($billingPostCode) {
+        $total_rows['shipping']['value'] .= '<br><small>' . __("Адреса") . ': ' . $billingAddress . ' (' . __('Поштовий індекс') . ': ' . esc_html($billingPostCode) . ")</small>";
+    }
+    return $total_rows;
+}
+
+// END ADDING CUSTOM FIELD
+
+// ADD CLASS FOR BODY
+add_filter( 'body_class','bodyClassBasedOnUrl' );
+function bodyClassBasedOnUrl( $classes ) {
+    global $wp;
+    if (
+        str_contains(home_url( $wp->request ), 'privacy-policy')
+        ||
+        str_contains(home_url( $wp->request ), 'refund_returns')
+    ) {
+        $classes[] = 'background-clear';
+    }
+    return $classes;
+
+}
+
+// END ADDING CLASS FOR BODY
+
+// ALLOW ONLY GOOD MENU ITEM FOR MANAGER
+function customize_admin_menu() {
+    global $menu;
+    if (current_user_can('shop_manager')) {
+        foreach ($menu as $index => $menu_item) {
+            if (!in_array($menu_item[1], ['edit_products', 'upload_files', 'edit_others_shop_orders'])) {
+                remove_menu_page($menu_item[2]);
+            }
+        }
+    }
+}
+
+add_action('admin_menu', 'customize_admin_menu');
+// END ALLOWING ONLY ONE MENU ITEM FOR MANAGER
+
+// DISABLE PAYMENT FOR GOODS
+add_filter( 'woocommerce_cart_needs_payment', '__return_false' );
+// END DISABLING PAYMENT METHODS
+
+//region CUSTOMIZE TYP
+//endregion
 
 if ( defined( 'ELEMENTOR_VERSION' ) ) {
-
 	add_action( 'elementor/editor/before_enqueue_scripts', 'orchid_store_admin_enqueue' );
 }
 
@@ -456,125 +656,3 @@ require get_template_directory() . '/inc/custom-fields.php';
  * Load theme dependecies
  */
 require get_template_directory() . '/vendor/autoload.php';
-
-// Add a custom field to the WooCommerce checkout page
-add_action('woocommerce_after_order_notes', 'newPostAddress_checkout_field');
-
-function newPostAddress_checkout_field($checkout)
-{
-    echo '<div id="newPostAddress_checkout_field"><h2>' . __('Адреса нової пошти') . '</h2>';
-
-    woocommerce_form_field('newPostAddress_field', array(
-        'type' => 'text',
-        'required' => true,
-        'class' => array('new-post-address form-row-wide'),
-        'label' => __('Адреса нової пошти'),
-        'placeholder' => __('Введіть адресу та відділення нової пошти'),
-    ), $checkout->get_value('newPostAddress_field'));
-
-    echo '</div>';
-}
-
-// Validate the custom field during the checkout process
-add_action('woocommerce_checkout_process', 'validate_newPostAddress_field_field');
-
-function validate_newPostAddress_field_field()
-{
-    if (empty($_POST['newPostAddress_field']) && $_POST['shipping_method'][0] == 'flat_rate:2') {
-        wc_add_notice(__("Адреса нової пошти обов'язкова"), 'error');
-        add_filter('woocommerce_checkout_fields', '__return_false');
-    }
-}
-
-add_action('wp_enqueue_scripts', 'enqueue_custom_script');
-
-function enqueue_custom_script()
-{
-    wp_enqueue_script('custom-checkout-script', get_template_directory_uri() . '/assets/dist/js/custom-checkout-script.js', array('jquery'), '', true);
-
-    // Pass variables to JavaScript
-    wp_localize_script('custom-checkout-script', 'checkout_params', array(
-        'custom_field_selector' => '#newPostAddress_checkout_field',
-        'delivery_method_selector' => 'input.shipping_method',
-        'trigger_value' => 'flat_rate:2',
-    ));
-}
-
-// Save custom field value to order meta
-add_action('woocommerce_checkout_create_order', 'save_newPostAddress_checkout_field');
-
-function save_newPostAddress_checkout_field($order)
-{
-    if (!empty($_POST['newPostAddress_field'])) {
-        $order->update_meta_data('_newPostAddress_field', sanitize_text_field($_POST['newPostAddress_field']));
-    }
-}
-
-
-function update_custom_field_in_admin($order_id, $post)
-{
-    if (!empty($_POST['newPostAddress_field'])) {
-        update_post_meta($order_id, '_newPostAddress_field', sanitize_text_field($_POST['newPostAddress_field']));
-    }
-}
-
-/**
- * Display field value on the order edit page
- */
-
-add_action( 'woocommerce_admin_order_data_after_shipping_address', 'newPostAddress_checkout_field_display_admin_order_meta', 10, 1 );
-
-function newPostAddress_checkout_field_display_admin_order_meta($order) {
-    $custom_field = $order->get_meta('_newPostAddress_field');
-    if ($custom_field) {
-        echo '<p><strong>' . __('Адреса нової пошти') . ':</strong> ' . esc_html($custom_field) . '</p>';
-    }
-}
-
-// Hook in
-add_filter( 'woocommerce_checkout_fields' , 'custom_override_checkout_fields' );
-
-// Our hooked in function - $fields is passed via the filter!
-function custom_override_checkout_fields( $fields ) {
-    return $fields;
-}
-
-// add class for body
-add_filter( 'body_class','bodyClassBasedOnUrl' );
-function bodyClassBasedOnUrl( $classes ) {
-    global $wp;
-    if (
-        str_contains(home_url( $wp->request ), 'privacy-policy')
-        ||
-        str_contains(home_url( $wp->request ), 'refund_returns')
-    ) {
-        $classes[] = 'background-clear';
-    }
-    return $classes;
-}
-
-// Add custom field to the delivery cell in WooCommerce order confirmation email
-add_filter('woocommerce_get_order_item_totals', 'add_custom_field_to_delivery_cell', 10, 3);
-
-function add_custom_field_to_delivery_cell($total_rows, $order, $tax_display)
-{
-    $newPostInfo = $order->get_meta('_newPostAddress_field');
-    if ($newPostInfo) {
-        $total_rows['shipping']['value'] .= '<br><small>' . __('Адреса') . ': ' . esc_html($newPostInfo) . "</small>";
-    }
-
-    return $total_rows;
-}
-
-function customize_admin_menu() {
-    global $menu;
-    if (current_user_can('shop_manager')) {
-        foreach ($menu as $index => $menu_item) {
-            if (!in_array($menu_item[1], ['edit_products', 'upload_files', 'edit_others_shop_orders'])) {
-                remove_menu_page($menu_item[2]);
-            }
-        }
-    }
-}
-
-add_action('admin_menu', 'customize_admin_menu');
