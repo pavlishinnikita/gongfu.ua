@@ -23,7 +23,9 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
 */
 
 :root {
-    --main-text-color: #FAFAFA;
+    --main-text-color: #0c0c0c;
+    --background-color-dark: #0c0c0c;
+    --background-color-light: #FFFFFF;
 }
 
 /** Header **/
@@ -40,13 +42,85 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
 	width: 150px;
 }
 #page .masterheader {
-    background-image: url(assets/dist/images/header_background.webp);
-    background-size: contain;
-    background-position: center;
+    background: transparent;
 }
-#page .masterheader .wishlist-minicart-inner .mini-cart {
-    background-color: darkgreen;
+
+#page .masterheader .bottom-block {
+    background: var(--background-color-dark);
+    color: var(--background-color-light);
 }
+
+#page .masterheader .hamburger-bar {
+    background-color: var(--background-color-light);
+}
+
+#page .mini-cart-open .woocommerce.widget_shopping_cart .cart_list li a {
+    color: var(--main-text-color)
+}
+
+#page .masterheader .wishlist-minicart-inner .mini-cart, #page .masterheader .mini-cart {
+    background-color: transparent;
+    border: none;
+    min-width: unset;
+}
+#page .masterheader .wishlist-minicart-inner .mini-cart button, #page .masterheader .mini-cart button {
+    color: var(--main-text-color);
+    background: transparent;
+    position: relative;
+}
+
+#page .masterheader .wishlist-minicart-inner .mini-cart button sub, #page .masterheader .mini-cart button sub {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+#page .mini-cart-open {
+    background: var(--background-color-light);
+}
+#page .mini-cart-items {
+    padding: 10px;
+    color: var(--main-text-color);
+    background-color: var(--background-color-light);
+}
+
+#page .woocommerce-mini-cart__buttons.buttons {
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 10px;
+}
+
+#page .woocommerce-mini-cart__buttons.buttons a {
+    background-color: var(--background-color-dark);
+
+    -webkit-transition: background-color 1000ms linear;
+    -moz-transition: background-color 1000ms linear;
+    -o-transition: background-color 1000ms linear;
+    -ms-transition: background-color 1000ms linear;
+    transition: background-color 1000ms linear;
+}
+#page .woocommerce-mini-cart__buttons.buttons a:hover {
+    background-color: var(--background-color-light);
+    color: var(--main-text-color);
+}
+
+aside.mobile-navigation {
+    background-color: var(--background-color-dark);
+    color: var(--background-color-light);
+}
+
+/* GOOD */
+.wp-block-button.wc-block-grid__product-add-to-cart a, .product-info-wrap .custom-cart-btn a {
+    background-color: var(--background-color-dark);
+}
+
+.wp-block-button.wc-block-grid__product-add-to-cart a:hover, .product-info-wrap .custom-cart-btn a:hover {
+    background-color: var(--background-color-light);
+    color: var(--main-text-color);
+}
+
+
 /** Main **/
 
 .cart-amount {
@@ -107,7 +181,7 @@ body {
 
 
 .site.__os-page-wrap__ {
-    background-image: url(assets/dist/images/background.webp);
+    background-image: url('/wp-content/themes/orchid-store-custom/assets/dist/images/background.png');
     background-position: left top;
     background-size: cover;
     background-repeat: no-repeat;
@@ -160,13 +234,20 @@ body {
 }
 
 .editor-entry .title-block a:after {
-	content: url("//gongfu.com.ua/wp-content/uploads/2023/11/arrow.png");
+    transition: all .5s ease-in-out;
+	content: "→";
     width: 30px;
     height: 30px;
-    right: 5px;
     position: absolute;
     display: inline-block;
     color: var(--main-text-color);
+
+    right: -30px;
+    font-size: xx-large;
+    top: -8px;
+}
+.editor-entry .title-block a:hover, .editor-entry .title-block a:hover:after {
+    color: #FFFFFF;
 }
 
 .editor-entry .new-goods {
@@ -215,6 +296,11 @@ body {
     position: absolute;
 }
 
+#page .os-about-widget .social-icons ul li a {
+    background-color: var(--background-color-light);
+    color: var(--main-text-color);
+}
+
 /* ====== custom styles  ====== */
 /** checkout **/
 #billing_postcode_field .optional, #newPostAddress_field_field .optional {
@@ -223,4 +309,121 @@ body {
 
 .wp-block-group.title-block, .wc-block-grid__product, .wc-block-grid__product-title  {
     color: var(--main-text-color);
+
+    position: relative;
 }
+
+.mid-header .__os-container__ {
+    width: 100%;
+}
+
+
+#page .header-style-1 .logo-col {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+
+#page .header-style-1 .header-shop-info {
+    flex: 0 0 60%;
+    max-width: 60%;
+}
+#page .header-style-1 .header-shop-info .main-navigation {
+    background: transparent;
+}
+
+#page .site-navigation > ul > li > a {
+    text-decoration: none;
+    color: var(--background-color-dark);
+    font-weight: 500;
+    padding-left: 15px;
+}
+
+#page .site-navigation > ul > li > a:hover {
+    border-radius: 5px;
+    text-decoration: none;
+    background: var(--background-color-light);
+    color: var(--background-color-dark);
+}
+
+#page .header-style-1 ._extra-col {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+
+#page .orchid-backtotop {
+    border-radius: 10px;
+    background-color: var(--background-color-dark);
+    color: var(--background-color-light);
+}
+
+/* ORDER */
+#place_order {
+    background-color: var(--background-color-dark);
+    color: var(--background-color-light);
+}
+
+#page .wc-proceed-to-checkout a {
+    background-color: var(--background-color-dark);
+    color: var(--background-color-light);
+}
+
+#page .wc-proceed-to-checkout a:hover {
+    background-color: var(--background-color-light);
+    color: var(--background-color-dark);
+}
+
+#page .woocommerce .custom-cart-btn .add_to_cart_button, #page .woocommerce .custom-cart-btn a,
+#page .woocommerce ul.products li.product .added_to_cart.wc-forward, #page .woocommerce ul.products li.product .button,
+#page .woocommerce-page .custom-cart-btn a {
+    background-color: var(--background-color-dark);
+    color: var(--background-color-light);
+    border-radius: 20px;
+}
+
+#page .woocommerce .custom-cart-btn .add_to_cart_button:hover, #page .woocommerce .custom-cart-btn a:hover,
+#page .woocommerce ul.products li.product .added_to_cart.wc-forward:hover, #page .woocommerce ul.products li.product .button:hover,
+#page .woocommerce-page .custom-cart-btn a:hover {
+    background-color: var(--background-color-light);
+    color: var(--background-color-dark);
+}
+
+#page .woocommerce a.remove {
+    color: var(--background-color-dark) !important;
+}
+
+#page .woocommerce a.remove:hover {
+    background: var(--background-color-dark);
+    color: var(--background-color-light) !important;
+}
+
+#page .shop_table .button {
+    opacity: 1;
+    background-color: var(--background-color-dark);
+    color: var(--background-color-light);
+    border-radius: 20px;
+}
+
+#page .shop_table .button:hover {
+    background-color: var(--background-color-light);
+    color: var(--background-color-dark);
+}
+
+/* MEDIA */
+/* Tablets (768px - 1024px) */
+@media screen and (max-width: 1024px) {
+    #page .site-navigation > ul > li.current_page_item a {
+        text-decoration: none;
+        background: var(--background-color-light);
+        color: var(--background-color-dark);
+    }
+}
+
+/* Phones (up to 767px) */
+@media screen and (max-width: 767px) {
+    #page .site-navigation > ul > li.current_page_item a {
+        text-decoration: none;
+        background: var(--background-color-light);
+        color: var(--background-color-dark);
+    }
+}
+/* END MEDIA */

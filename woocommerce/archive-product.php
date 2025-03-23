@@ -1,103 +1,178 @@
 <?php
+
 /**
- * The Template for displaying product archives, including the main shop page which is a post type archive
+ * The Template for displaying product archives, including the shop page, category pages, and more.
  *
  * This template can be overridden by copying it to yourtheme/woocommerce/archive-product.php.
  *
- * HOWEVER, on occasion WooCommerce will need to update template files and you
- * (the theme developer) will need to copy the new files to your theme to
- * maintain compatibility. We try to do this as little as possible, but it does
- * happen. When this occurs the version of the template file will be bumped and
- * the readme will list any important changes.
- *
- * @see     https://docs.woocommerce.com/document/template-structure/
- * @package WooCommerce\Templates
- * @version 3.4.0
+ * @package WooCommerce/Templates
+ * @version 3.7.0
  */
 
 defined( 'ABSPATH' ) || exit;
 
 get_header( 'shop' );
 
-/**
- * Hook: woocommerce_before_main_content.
- *
- * @hooked woocommerce_output_content_wrapper - 10 (outputs opening divs for the content)
- * @hooked woocommerce_breadcrumb - 20
- * @hooked WC_Structured_Data::generate_website_data() - 30
- */
 do_action( 'woocommerce_before_main_content' );
 
 ?>
-<header class="woocommerce-products-header">
-	<?php
-	/**
-	 * Hook: woocommerce_archive_description.
-	 *
-	 * @hooked woocommerce_taxonomy_archive_description - 10
-	 * @hooked woocommerce_product_archive_description - 10
-	 */
-	do_action( 'woocommerce_archive_description' );
-	?>
-</header>
+
+    <div class="category-section">
+        <?php
+
+        $categories = get_terms([
+            'taxonomy'   => 'product_cat',
+            'hide_empty' => true,
+        ]);
+
+        if (!empty($categories)) : ?>
+            <div class="category-list">
+                <?php foreach ($categories as $category) : ?>
+                    <div class="category-item">
+                        <a href="<?php echo get_term_link($category); ?>" class="category-link">
+                            <?php
+                            $thumbnail_id = get_term_meta($category->term_id, 'thumbnail_id', true);
+                            if ($thumbnail_id) {
+                                echo wp_get_attachment_image($thumbnail_id, 'medium');
+                            }
+                            ?>
+                            <h3 class="category-title"><?php echo esc_html($category->name); ?></h3>
+                        </a>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <hr>
+
+    <div class="new-arrivals-section">
+        <h2><?=__("Нові надходження")?></h2>
+        <div class="new-arrivals-slider">
+            <?php echo do_shortcode('[products limit="6" columns="3" orderby="date" order="DESC"]'); ?>
+        </div>
+    </div>
+
+    <div class="most-popular-section">
+        <h2><?=__("Популярні товари")?></h2>
+        <div class="most-popular-slider">
+            <?php echo do_shortcode('[products limit="6" columns="3" orderby="popularity"]'); ?>
+        </div>
+    </div>
+
 <?php
-if ( woocommerce_product_loop() ) {
-
-	/**
-	 * Hook: woocommerce_before_shop_loop.
-	 *
-	 * @hooked woocommerce_output_all_notices - 10
-	 * @hooked woocommerce_result_count - 20
-	 * @hooked woocommerce_catalog_ordering - 30
-	 */
-	do_action( 'woocommerce_before_shop_loop' );
-
-	woocommerce_product_loop_start();
-
-	if ( wc_get_loop_prop( 'total' ) ) {
-		while ( have_posts() ) {
-			the_post();
-
-			/**
-			 * Hook: woocommerce_shop_loop.
-			 *
-			 * @hooked WC_Structured_Data::generate_product_data() - 10
-			 */
-			do_action( 'woocommerce_shop_loop' );
-
-			wc_get_template_part( 'content', 'product' );
-		}
-	}
-
-	woocommerce_product_loop_end();
-
-	/**
-	 * Hook: woocommerce_after_shop_loop.
-	 *
-	 * @hooked woocommerce_pagination - 10
-	 */
-	do_action( 'woocommerce_after_shop_loop' );
-} else {
-	/**
-	 * Hook: woocommerce_no_products_found.
-	 *
-	 * @hooked wc_no_products_found - 10
-	 */
-	do_action( 'woocommerce_no_products_found' );
-}
-
-/**
- * Hook: woocommerce_after_main_content.
- *
- * @hooked woocommerce_output_content_wrapper_end - 10 (outputs closing divs for the content)
- */
 do_action( 'woocommerce_after_main_content' );
 
-/**
- * Hook: woocommerce_sidebar.
- *
- * @hooked woocommerce_get_sidebar - 10
- */
-do_action( 'woocommerce_sidebar' );
-
 get_footer( 'shop' );
+
+?>
+<script>
+    jQuery(document).ready(function($) {
+        $('.new-arrivals-slider ul.products').slick({
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            infinite: true,
+            dots: true,
+            arrows: true,
+            responsive: [
+                {
+                    breakpoint: 1024,
+                    settings: {
+                        slidesToShow: 2
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    settings: {
+                        slidesToShow: 1
+                    }
+                }
+            ]
+        });
+
+        $('.most-popular-slider ul.products').slick({
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            infinite: true,
+            dots: true,
+            arrows: true,
+            responsive: [
+                {
+                    breakpoint: 1024,
+                    settings: {
+                        slidesToShow: 2
+                    }
+                },
+                {
+                    breakpoint: 768,
+                    settings: {
+                        slidesToShow: 1
+                    }
+                }
+            ]
+        });
+    });
+</script>
+
+<style>
+    .new-arrivals-section, .most-popular-section {
+        margin-top: 40px;
+    }
+
+    .slick-slide {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .slick-prev, .slick-next {
+        color: #000;
+    }
+
+    .slick-prev:before, .slick-next:before {
+        font-size: 20px;
+    }
+
+    .slick-dots {
+        bottom: -30px;
+    }
+
+    .slick-dots li button:before {
+        color: #000;
+    }
+
+    .category-item .category-title, .category-section h2, .new-arrivals-section h2, .most-popular-section h2 {
+        color: var(--main-text-color);
+    }
+    .category-list {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .most-popular-slider ul.products, .new-arrivals-slider ul.products {
+        display: flex !important;
+        align-items: stretch;
+    }
+    .most-popular-slider .slick-slide, .new-arrivals-slider .slick-slide {
+        height: auto !important;
+        margin: 0 10px;
+    }
+
+    .most-popular-slider .slick-track, .new-arrivals-slider .slick-track {
+        display: flex !important;
+    }
+
+    .most-popular-slider .slick-list, .new-arrivals-slider .slick-list {
+        margin: 0 -10px !important;
+    }
+
+    .most-popular-slider li.product, .new-arrivals-slider li.product {
+        height: 100% !important;
+        margin: 0 20px !important;
+    }
+
+    .most-popular-slider .product-info-wrap .woocommerce-loop-product__title, .new-arrivals-slider .product-info-wrap .woocommerce-loop-product__title {
+        color: black;
+    }
+
+</style>

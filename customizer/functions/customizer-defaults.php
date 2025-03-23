@@ -129,8 +129,8 @@ if ( ! function_exists( 'orchid_store_get_default_theme_options' ) ) {
 
 			'excerpt_length' => 30,
 
-			'primary_color' => '#0286E7',
-			'secondary_color' => '#E26143',
+			'primary_color' => '#FFFFFF',//'#0286E7',
+			'secondary_color' => '#000000',//'#E26143',
 
 			'disable_ouline_on_focus' => false,
 		);

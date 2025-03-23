@@ -97,7 +97,63 @@
 					) {
 						?>
                         <div class="os-col header-shop-info">
-                            <h1>Гунфу Ча 功夫茶</h1>
+                            <div class="main-navigation">
+                                <div class="__os-container__">
+                                    <div class="os-row os-nav-row <?php orchid_store_menu_row_class(); ?>">
+                                        <?php
+                                        if ( orchid_store_get_option( 'display_special_menu' ) ) {
+                                            ?>
+                                            <div class="os-col os-nav-col-left">
+                                                <div class="category-navigation">
+                                                    <button class="cat-nav-trigger">
+                                                        <?php
+                                                        $orchid_store_special_menu_title = orchid_store_get_option( 'special_menu_title' );
+                                                        if ( ! empty( $orchid_store_special_menu_title ) ) {
+                                                            ?>
+                                                            <span class="title"><?php echo esc_html( $orchid_store_special_menu_title ); ?></span>
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                        <span class="icon">
+											<span class="line"></span>
+											<span class="line"></span>
+											<span class="line"></span>
+										</span>
+                                                    </button>
+
+                                                    <?php
+                                                    /**
+                                                     * Hook - orchid_store_secondary_navigation.
+                                                     *
+                                                     * @hooked orchid_store_secondary_navigation_action - 10
+                                                     */
+                                                    do_action( 'orchid_store_secondary_navigation' );
+                                                    ?>
+                                                </div>
+                                            </div>
+                                            <?php
+                                        }
+                                        ?>
+                                        <div class="os-col os-nav-col-right">
+                                            <div class="menu-toggle">
+                                                <button class="mobile-menu-toggle-btn">
+                                                    <span class="hamburger-bar"></span>
+                                                    <span class="hamburger-bar"></span>
+                                                    <span class="hamburger-bar"></span>
+                                                </button>
+                                            </div>
+                                            <?php
+                                            /**
+                                             * Hook - orchid_store_primary_navigation.
+                                             *
+                                             * @hooked orchid_store_primary_navigation_action - 10
+                                             */
+                                            do_action( 'orchid_store_primary_navigation' );
+                                            ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 						<div class="os-col _extra-col">
 							<div class="aside-right">
@@ -184,64 +240,6 @@
 				</div><!-- .os-row -->
 			</div><!-- .__os-container__ -->
 		</div><!-- .mid-header -->
-		<div class="bottom-header">
-			<div class="main-navigation"> 
-				<div class="__os-container__">
-					<div class="os-row os-nav-row <?php orchid_store_menu_row_class(); ?>">
-						<?php
-						if ( orchid_store_get_option( 'display_special_menu' ) ) {
-							?>
-							<div class="os-col os-nav-col-left">
-								<div class="category-navigation">
-									<button class="cat-nav-trigger">
-										<?php
-										$orchid_store_special_menu_title = orchid_store_get_option( 'special_menu_title' );
-										if ( ! empty( $orchid_store_special_menu_title ) ) {
-											?>
-											<span class="title"><?php echo esc_html( $orchid_store_special_menu_title ); ?></span>
-											<?php
-										}
-										?>
-										<span class="icon">
-											<span class="line"></span>
-											<span class="line"></span>
-											<span class="line"></span>
-										</span>
-									</button><!-- . cat-nav-trigger -->
-
-									<?php
-									/**
-									 * Hook - orchid_store_secondary_navigation.
-									 *
-									 * @hooked orchid_store_secondary_navigation_action - 10
-									 */
-									do_action( 'orchid_store_secondary_navigation' );
-									?>
-								</div><!-- .site-navigation category-navigation -->
-							</div><!-- .os-col.os-nav-col-left -->
-							<?php
-						}
-						?>
-						<div class="os-col os-nav-col-right">
-							<div class="menu-toggle">
-								<button class="mobile-menu-toggle-btn">
-									<span class="hamburger-bar"></span>
-									<span class="hamburger-bar"></span>
-									<span class="hamburger-bar"></span>
-								</button>
-							</div><!-- .meu-toggle -->
-							<?php
-							/**
-							 * Hook - orchid_store_primary_navigation.
-							 *
-							 * @hooked orchid_store_primary_navigation_action - 10
-							 */
-							do_action( 'orchid_store_primary_navigation' );
-							?>
-						</div><!-- // os-col os-nav-col-right -->
-					</div><!-- // os-row os-nav-row -->
-				</div><!-- .__os-container__ -->
-			</div><!-- .main-navigation -->
-		</div><!-- .bottom-header -->
+		<div class="bottom-header"></div>
 	</div><!-- .header-inner -->
 </header><!-- .masterheader.header-style-1 -->

@@ -328,6 +328,24 @@ add_shortcode( 'counter', 'get_counter_handler' );
 
 // customize shop filter
 
+//region custom main banner
+function main_banner_shortcode($atts) {
+    $atts = shortcode_atts([
+        'background' => '',
+        'text' => 'Default Text',
+        'sub_text' => '',
+        'button_text' => 'Click Here',
+        'button_link' => '#',
+        'image_url' => '',
+    ], $atts, 'main_banner');
+
+    ob_start();
+    get_template_part( 'template-parts/partials/banner', 'main' , $atts);
+    return ob_get_clean();
+}
+add_shortcode('main_banner', 'main_banner_shortcode');
+//endregion
+
 function custom_filter_dropdown() {
     $categories = get_terms('product_cat');
 
@@ -425,6 +443,39 @@ function checkout_fields($fields) {
     return $fields;
 }
 add_filter('woocommerce_checkout_fields', "checkout_fields");
+//endregion
+
+//region MINI CART UPDATE
+function orchid_store_mini_cart_action($fragments) {
+?>
+<div class="mini-cart">
+    <button class="trigger-mini-cart">
+        <i class='bx bx-cart'></i><sub class="mini-cart-count"><?php echo wp_kses_post( WC()->cart->get_cart_contents_count() ); ?></sub>
+    </button><!-- .trigger-mini-cart -->
+    <?php
+    if ( ! is_cart() && ! is_checkout() ) {
+        ?>
+        <div class="mini-cart-open">
+            <div class="mini-cart-items">
+                <?php
+
+                $instance = array( 'title' => '' );
+
+                the_widget( 'WC_Widget_Cart', $instance );
+                ?>
+            </div><!-- .mini-cart-tems -->
+        </div><!-- .mini-cart-open -->
+        <?php
+        }
+    }
+    add_filter('woocommerce_add_to_cart_fragments', function ($fragments) {
+        ob_start();
+        ?>
+        <sub class="mini-cart-count"><?php echo WC()->cart->get_cart_contents_count(); ?></sub>
+        <?php
+        $fragments['.mini-cart-count'] = ob_get_clean();
+        return $fragments;
+    });
 //endregion
 
 // Validate the custom field during the checkout process
@@ -557,7 +608,66 @@ add_action('admin_menu', 'customize_admin_menu');
 add_filter( 'woocommerce_cart_needs_payment', '__return_false' );
 // END DISABLING PAYMENT METHODS
 
+//region SEND EMAIL TO CUSTOMERS
+//function send_new_product_email($post_id, $post, $update) {
+//    // Check if the post type is 'product' and if it's being published for the first time
+//    if ($post->post_type !== 'product' || $update) {
+//        return;
+//    }
+//
+//    // Get product details
+//    $product = wc_get_product($post_id);
+//    if (!$product) {
+//        return;
+//    }
+//
+//    $product_name = $product->get_name();
+//    $product_url = get_permalink($post_id);
+//    $product_price = wc_price($product->get_price());
+//
+//    // Email subject and message
+//    $subject = 'New Product Available: ' . $product_name;
+//    $message = "
+//        <h2>Exciting News!</h2>
+//        <p>We've just added a new product to our store: <strong>$product_name</strong>.</p>
+//        <p>Price: $product_price</p>
+//        <p><a href='$product_url'>View Product</a></p>
+//    ";
+//
+//    // Get all customer emails (assuming you want to email all WooCommerce customers)
+//    $customers = get_users(['role' => 'customer']);
+//    $emails = [];
+//
+//    foreach ($customers as $customer) {
+//        $emails[] = $customer->user_email;
+//    }
+//
+//    if (!empty($emails)) {
+//        $headers = ['Content-Type: text/html; charset=UTF-8'];
+//        wp_mail($emails, $subject, $message, $headers);
+//    }
+//}
+//add_action('save_post_product', 'send_new_product_email', 10, 3);
+//endregion
+
 //region CUSTOMIZE TYP
+//endregion
+
+//region CUSTOMIZE ALL CATEGORIES BLOCK
+add_filter('woocommerce_subcategory_count_html', '__return_empty_string');
+$categories = get_categories(array(
+    'taxonomy'   => 'product_cat',
+    'hide_empty' => false,
+));
+function enqueue_slick_slider_assets() {
+    // Slick Slider CSS
+    wp_enqueue_style( 'slick-css', 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css' );
+    wp_enqueue_style( 'slick-theme-css', 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css' );
+
+    // Slick Slider JS
+    wp_enqueue_script( 'slick-js', 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js', array('jquery'), '', true );
+}
+add_action( 'wp_enqueue_scripts', 'enqueue_slick_slider_assets' );
 //endregion
 
 if ( defined( 'ELEMENTOR_VERSION' ) ) {
