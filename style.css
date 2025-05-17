@@ -63,17 +63,27 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
     border: none;
     min-width: unset;
 }
+
+
+/* MINICART CUSTOMIZATION */
 #page .masterheader .wishlist-minicart-inner .mini-cart button, #page .masterheader .mini-cart button {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+
     color: var(--main-text-color);
     background: transparent;
     position: relative;
 }
+#page .trigger-mini-cart .bx.bx-cart {
+    font-size: 50px;
+}
 
 #page .masterheader .wishlist-minicart-inner .mini-cart button sub, #page .masterheader .mini-cart button sub {
-    position: absolute;
-    bottom: 0;
-    right: 0;
+    align-self: flex-end;
+    font-size: larger;
 }
+/* MINICART CUSTOMIZATION END */
 
 #page .mini-cart-open {
     background: var(--background-color-light);
@@ -111,11 +121,11 @@ aside.mobile-navigation {
 }
 
 /* GOOD */
-.wp-block-button.wc-block-grid__product-add-to-cart a, .product-info-wrap .custom-cart-btn a {
+.wp-block-button.wc-block-grid__product-add-to-cart a, #page .product-info-wrap .custom-cart-btn a, .wc-block-grid .wc-block-grid__products .wc-block-grid__product .wc-block-grid__product-add-to-cart>a {
     background-color: var(--background-color-dark);
 }
 
-.wp-block-button.wc-block-grid__product-add-to-cart a:hover, .product-info-wrap .custom-cart-btn a:hover {
+.wp-block-button.wc-block-grid__product-add-to-cart a:hover, #page .product-info-wrap .custom-cart-btn a:hover, .wc-block-grid .wc-block-grid__products .wc-block-grid__product .wc-block-grid__product-add-to-cart>a:hover {
     background-color: var(--background-color-light);
     color: var(--main-text-color);
 }
@@ -149,6 +159,10 @@ body {
 
 .wc-block-grid .wc-block-grid__products .wc-block-grid__product .wc-block-grid__product-add-to-cart > a, .woocommerce .products .product .custom-cart-btn .button, .custom-cart-btn .added_to_cart.wc-forward {
     border-radius: 20px;
+    padding: 10px;
+    margin: 10px;
+    background-color: var(--main-text-color);
+    color: var(--background-color-light);
 }
 
 .site-content .wc-block-grid__product .wc-block-grid__product-title {
@@ -396,16 +410,24 @@ body {
     color: var(--background-color-light) !important;
 }
 
-#page .shop_table .button {
+#page .shop_table .button, .filter-from-submit, #page .woocommerce .products .product .custom-cart-btn .button, #page .woocommerce a.button, #page .woocommerce button.button, #page .woocommerce input.button {
     opacity: 1;
     background-color: var(--background-color-dark);
     color: var(--background-color-light);
     border-radius: 20px;
 }
 
-#page .shop_table .button:hover {
+
+#page .shop_table .button:hover, .filter-from-submit:hover,  #page .woocommerce a.button:hover, #page .woocommerce button.button:hover, #page .woocommerce input.button:hover {
     background-color: var(--background-color-light);
     color: var(--background-color-dark);
+}
+
+#page .woocommerce-ordering {
+    display: flex;
+    gap: 10px;
+    justify-content: space-around;
+    width: unset;
 }
 
 /* MEDIA */

@@ -37,10 +37,20 @@ $categories = get_terms('product_cat');
         </select>
         <input type="hidden" name="paged" value="1" />
     </div>
+    <div class="buttons-block">
+        <button class="filter-from-submit"><?= __("Apply") ?></button>
+    </div>
 	<?php wc_query_string_form_fields( null, array( 'orderby', 'submit', 'paged', 'product-page', 'category' ) ); ?>
 </form>
 <script>
-    jQuery('.filter-block').on('change', function (e) {
+    jQuery(function () {
+        jQuery('#page form.woocommerce-ordering').off('change').on('change', 'select.orderby', function (e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return false;
+        });
+    });
+    jQuery('.filter-from-submit').on('click', function (e) {
         jQuery(e.target).closest('form').submit();
     });
 </script>

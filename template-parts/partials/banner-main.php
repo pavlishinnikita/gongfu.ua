@@ -64,7 +64,6 @@ $imageUrl = !empty($args['image_url']) ? esc_url($args['image_url']) : '';
 
     .banner-content .image {
         height: auto;
-        max-height: 100%;
         width: auto;
         max-width: 100%;
         object-fit: contain;

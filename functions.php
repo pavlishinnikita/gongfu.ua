@@ -609,48 +609,50 @@ add_filter( 'woocommerce_cart_needs_payment', '__return_false' );
 // END DISABLING PAYMENT METHODS
 
 //region SEND EMAIL TO CUSTOMERS
-//function send_new_product_email($post_id, $post, $update) {
-//    // Check if the post type is 'product' and if it's being published for the first time
-//    if ($post->post_type !== 'product' || $update) {
-//        return;
-//    }
-//
-//    // Get product details
-//    $product = wc_get_product($post_id);
-//    if (!$product) {
-//        return;
-//    }
-//
-//    $product_name = $product->get_name();
-//    $product_url = get_permalink($post_id);
-//    $product_price = wc_price($product->get_price());
-//
-//    // Email subject and message
-//    $subject = 'New Product Available: ' . $product_name;
-//    $message = "
-//        <h2>Exciting News!</h2>
-//        <p>We've just added a new product to our store: <strong>$product_name</strong>.</p>
-//        <p>Price: $product_price</p>
-//        <p><a href='$product_url'>View Product</a></p>
-//    ";
-//
-//    // Get all customer emails (assuming you want to email all WooCommerce customers)
-//    $customers = get_users(['role' => 'customer']);
-//    $emails = [];
-//
-//    foreach ($customers as $customer) {
-//        $emails[] = $customer->user_email;
-//    }
-//
-//    if (!empty($emails)) {
-//        $headers = ['Content-Type: text/html; charset=UTF-8'];
-//        wp_mail($emails, $subject, $message, $headers);
-//    }
-//}
-//add_action('save_post_product', 'send_new_product_email', 10, 3);
-//endregion
+function send_new_product_email($post_id, $post, $update) {
 
-//region CUSTOMIZE TYP
+    if ($post->post_type !== 'product' || $update) {
+        return;
+    }
+
+
+    $product = wc_get_product($post_id);
+    if (!$product) {
+        return;
+    }
+
+    $product_name = $product->get_name();
+    $product_url = get_permalink($post_id);
+    $product_price = wc_price($product->get_price());
+
+    ob_start();
+    get_template_part( 'template-parts/mail/product', 'new' , [
+        'name' => $product->get_name(),
+        'url' => get_permalink($post_id),
+        'price' => wc_price($product->get_price()),
+    ]);
+    $emailContent = ob_get_clean();
+    $subject = 'New Product Available: ' . $product_name;
+    $message = "
+        <h2>Exciting News!</h2>
+        <p>We've just added a new product to our store: <strong>$product_name</strong>.</p>
+        <p>Price: $product_price</p>
+        <p><a href='$product_url'>View Product</a></p>
+    ";
+
+    $customers = get_users(['role' => 'customer']);
+    $emails = [];
+
+    foreach ($customers as $customer) {
+        $emails[] = $customer->user_email;
+    }
+
+    if (!empty($emails)) {
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+        wp_mail($emails, $subject, $message, $headers);
+    }
+}
+//add_action('save_post_product', 'send_new_product_email', 10, 3);
 //endregion
 
 //region CUSTOMIZE ALL CATEGORIES BLOCK
