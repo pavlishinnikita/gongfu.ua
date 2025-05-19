@@ -10,10 +10,10 @@ jQuery(document).ready(function ($) {
     $(document).on('change', checkout_params.delivery_method_selector, function (e) {
         hideAllDeliveryFields();
         switch ($(this).val()) {
-            case "flat_rate:2":
+            case "flat_rate:3":
                 $(".new-post-address").show();
                 break;
-            case "flat_rate:3":
+            case "flat_rate:6":
                 $("#billing_postcode_field").show();
                 break;
         }

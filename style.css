@@ -64,7 +64,6 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
     min-width: unset;
 }
 
-
 /* MINICART CUSTOMIZATION */
 #page .masterheader .wishlist-minicart-inner .mini-cart button, #page .masterheader .mini-cart button {
     display: flex;
@@ -358,6 +357,29 @@ body {
     background: var(--background-color-light);
     color: var(--background-color-dark);
 }
+
+#content .woocommerce-pagination ul.page-numbers li span {
+    background-color: var(--main-text-color);
+    color: var(--background-color-light);
+}
+
+#content .woocommerce-pagination ul.page-numbers li span:hover {
+    color: var(--main-text-color);
+    background-color: var(--background-color-light);
+}
+
+/* SIDEBAR MOBILE */
+aside.mobile-navigation #site-navigation ul li a, aside.mobile-navigation #site-navigation ul li.current_page_item a:hover {
+    text-decoration: none;
+    color: var(--main-text-color);
+    background-color: var(--background-color-light);
+}
+aside.mobile-navigation #site-navigation ul li a:hover, aside.mobile-navigation #site-navigation ul li.current_page_item a {
+    text-decoration: none;
+    color: var(--background-color-light);
+    background-color: var(--background-color-dark);
+}
+/* SIDEBAR MOBILE END */
 
 #page .header-style-1 ._extra-col {
     flex: 0 0 20%;
