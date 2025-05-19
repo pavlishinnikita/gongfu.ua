@@ -478,6 +478,11 @@ function orchid_store_mini_cart_action($fragments) {
     });
 //endregion
 
+// region IMAGES FIX
+add_filter('wp_calculate_image_srcset', '__return_false');
+add_filter('wp_calculate_image_sizes', '__return_false');
+// endregion
+
 // Validate the custom field during the checkout process
 add_action('woocommerce_checkout_process', 'validate_delivery_fields');
 
