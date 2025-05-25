@@ -478,6 +478,11 @@ function orchid_store_mini_cart_action($fragments) {
     });
 //endregion
 
+// region IMAGES FIX
+add_filter('wp_calculate_image_srcset', '__return_false');
+add_filter('wp_calculate_image_sizes', '__return_false');
+// endregion
+
 // Validate the custom field during the checkout process
 add_action('woocommerce_checkout_process', 'validate_delivery_fields');
 
@@ -768,3 +773,50 @@ require get_template_directory() . '/inc/custom-fields.php';
  * Load theme dependecies
  */
 require get_template_directory() . '/vendor/autoload.php';
+
+add_action( 'transition_post_status', 'email_new_product_to_customers', 10, 3);
+
+function email_new_product_to_customers( $new, $old, $post ) {
+    if ( $post->post_type !== 'product' || $old === 'publish' || $new !== 'publish' ) {
+        return;
+    }
+
+    $product  = wc_get_product( $post->ID );
+
+    if (!function_exists('wc_get_orders')) {
+        return;
+    }
+
+    $orders = wc_get_orders([
+        'limit' => -1,
+        'customer_id' => 0, // only guest customers cause users can't register
+    ]);
+
+    $guests = [];
+
+    foreach ($orders as $order) {
+        $email = $order->get_billing_email();
+        $name  = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+
+        if (!isset($guests[$email])) {
+            $guests[$email] = $name;
+        }
+    }
+
+    foreach ($guests as $email => $name) {
+        ob_start();
+        $args = [
+            'product' => $product,
+            'customerName' => $name,
+        ];
+        extract( $args );
+        include get_template_directory() . '/template-parts/mail/product-new.php';
+        $message = ob_get_clean();
+        wp_mail(
+            $email,
+    '🎉 Новинка ' . $args['name'],
+            $message,
+            [ 'Content-Type: text/html; charset=UTF-8' ]
+        );
+    }
+}
