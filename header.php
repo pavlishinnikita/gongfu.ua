@@ -9,6 +9,8 @@
  * @package Orchid_Store
  */
 
+$logo_id = get_theme_mod( 'custom_logo' );
+$logo_url = wp_get_attachment_image_url( $logo_id , 'full' );
 ?>
 <!doctype html>
 <html <?php language_attributes(); ?>>
@@ -16,7 +18,7 @@
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="profile" href="https://gmpg.org/xfn/11">
-
+    <link rel="icon" href="<?=$logo_url?>" sizes="32x32">
 	<?php wp_head(); ?>
 </head>
 
