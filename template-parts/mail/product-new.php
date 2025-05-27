@@ -9,7 +9,7 @@
                 <tr>
                     <td style="border: none;">
                         <h2 style="margin: 20px 0;">Привіт, <?= esc_html($customerName)?>, ми тільки що додали новий товар у наш магазин</h2>
-                        <p style="font-size: 18px; margin: 10px 0;">Встигни замовити <?= esc_html($product->get_name()); ?> за ціною лише: <strong><?= $product->get_price() ?></strong></p>
+                        <p style="font-size: 18px; margin: 10px 0;">Встигни замовити <?= esc_html($product->get_name()); ?>. Клікай на кнопку нижче та замовляй</p>
                         <div>
                             <?= $product->get_image( 'woocommerce_thumbnail' ) ?>
                         </div>
